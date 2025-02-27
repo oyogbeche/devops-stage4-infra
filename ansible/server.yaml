@@ -1,0 +1,84 @@
+### Dependencies Role: install_docker ###
+- name: Install dependencies
+  hosts: web
+  become: yes
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install prerequisite packages
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+        state: present
+
+    - name: Add Docker's official GPG key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+        keyring: /usr/share/keyrings/docker-archive-keyring.gpg
+
+    - name: Add Docker repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+
+    - name: Update apt cache after adding Docker repo
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install Docker packages
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+
+    - name: Add current user to the docker group
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+### Deployment Role: deploy_app ###
+- name: Deploy application
+  hosts: web
+  become: yes
+  tasks:
+    - name: Clone application repository
+      ansible.builtin.git:
+        repo: "https://github.com/oyogbeche/DevOps-Stage-4.git"
+        dest: "/opt/app"
+        version: main
+
+    - name: Copy Traefik configuration file (if needed)
+      copy:
+        src: "./traefik.yml"
+        dest: "/etc/traefik/traefik.yml"
+
+    - name: Start application using Docker Compose
+      command: docker-compose up -d
+      args:
+        chdir: /opt/app
+
+    - name: Configure domain and SSL certificates
+      copy:
+        src: "certs/"
+        dest: "/opt/app/certs/"
+
+    - name: Ensure HTTP to HTTPS redirection is set
+      lineinfile:
+        path: /etc/traefik/traefik.yml
+        line: "    redirectToHttps: true"
+        create: yes
+
+    - name: Restart application services
+      command: docker-compose restart
+      args:
+        chdir: /opt/app
