@@ -7,16 +7,8 @@
 
   tasks:
     - name: Remove old Docker packages
-      apt:
-        name: "{{ item }}"
-        state: absent
-        purge: yes
-      loop:
-        - docker.io
-        - docker-compose
-        - docker-compose-v2
-        - docker-doc
-        - podman-docker
+      shell: |
+        for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 
     - name: Update package cache and upgrade system
       apt:
@@ -25,7 +17,7 @@
         cache_valid_time: 3600
 
     - name: Install prerequisite packages
-      apt:
+      apt-get:
         name:
           - ca-certificates
           - curl
@@ -55,11 +47,12 @@
         creates: /etc/apt/sources.list.d/docker.list
 
     - name: Install Docker components
-      apt:
+      apt-get:
         name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
+          - docker-ce 
+          - docker-ce-cli 
+          - containerd.io 
+          - docker-buildx-plugin 
           - docker-compose-plugin
         state: present
 
