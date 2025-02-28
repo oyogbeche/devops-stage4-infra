@@ -17,7 +17,7 @@
         cache_valid_time: 3600
 
     - name: Install prerequisite packages
-      apt-get:
+      apt:
         name:
           - ca-certificates
           - curl
@@ -47,7 +47,7 @@
         creates: /etc/apt/sources.list.d/docker.list
 
     - name: Install Docker components
-      apt-get:
+      apt:
         name:
           - docker-ce 
           - docker-ce-cli 
