@@ -46,24 +46,13 @@
         creates: /etc/apt/keyrings/docker.gpg
 
     - name: Add Docker repository
-      block:
-      - name: Add via apt_repository
-        ansible.builtin.apt_repository:
-          repo: "deb [arch={{ ansible_architecture | replace('x86_64','amd64') | replace('aarch64','arm64') }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
-          filename: docker
-          state: present
-          update_cache: yes
-        register: repo_task
-
-      - name: Fallback to shell if module fails
-        ansible.builtin.shell: |
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
-          https://download.docker.com/linux/ubuntu \
-          $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-          tee /etc/apt/sources.list.d/docker.list
-        args:
-          creates: /etc/apt/sources.list.d/docker.list
-        when: repo_task is failed
+      ansible.builtin.shell: |
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+        https://download.docker.com/linux/ubuntu \
+        $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+        tee /etc/apt/sources.list.d/docker.list
+      args:
+        creates: /etc/apt/sources.list.d/docker.list
 
     - name: Install Docker components
       apt:
