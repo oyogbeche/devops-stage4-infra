@@ -16,25 +16,17 @@ This repository contains the Terraform configuration to provision a server and t
     cd DevOps-Stage-4-infra
     ```
 
-3. **Initialize Terraform:**
+2. **Initialize Terraform:**
 
     ```sh
     terraform init
     ```
 
-4. **Apply Terraform configuration:**
+3. **Apply Terraform configuration:**
 
     ```sh
     terraform apply -auto-approve
     ```
-
-5. **Run Ansible playbook:**
-
-    ```sh
-    ansible-playbook -i inventory.ini playbook.yml
-    ```
-
-    This will install dependencies, clone the repository, and start the application using Docker Compose.
 
 ## Files
 
