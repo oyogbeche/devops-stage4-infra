@@ -1,0 +1,33 @@
+### Deployment Role: deploy_app ###
+- name: Deploy application
+  hosts: web
+  become: true
+  tasks:
+    - name: Clone application repository
+      ansible.builtin.git:
+        repo: "https://github.com/oyogbeche/DevOps-Stage-4.git"
+        dest: "/home/admin/app/"
+        version: main
+        update: true
+        force: true
+
+
+    - name: Ensure /etc/traefik/ exists
+      ansible.builtin.file:
+        path: /etc/traefik/
+        state: directory
+        mode: '0755'
+        owner: admin
+        group: admin
+
+
+    - name: Copy Traefik configuration file
+      ansible.builtin.copy:
+        src: "./traefik.yaml"
+        dest: "/etc/traefik/traefik.yaml"
+
+    - name: Start Docker Compose services 
+      community.docker.docker_compose_v2:
+       project_src: /home/admin/app/
+       build: always
+       state: present
