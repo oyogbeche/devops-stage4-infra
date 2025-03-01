@@ -75,7 +75,7 @@ resource "null_resource" "run_ansible" {
   provisioner "local-exec" {
     command = <<EOT
       chmod 600 ../stage4-key.pem && \
-      ansible-playbook -i ../ansible/inventory ../ansible/server.yaml --private-key=../stage4-key.pem --extra-vars "nostricthostchecking=true"
+      ansible-playbook -i ../ansible/inventory.ini ../ansible/dependencies.yaml ../ansible/deploy.yaml --private-key=../stage4-key.pem --extra-vars "nostricthostchecking=true"
 EOT
   }
 }
