@@ -43,13 +43,19 @@ resource "aws_security_group" "stage4_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+ }
 }
-
 resource "aws_instance" "stage4_inst" {
-  ami             = "ami-03fd334507439f4d1"
+  ami             = "ami-0715d656023fe21b4"
   instance_type   = "t2.micro"
   key_name        = aws_key_pair.generated_key.key_name
   security_groups = [aws_security_group.stage4_sg.name]
+  associate_public_ip_address = true
 
   root_block_device {
     volume_size = 30
@@ -68,9 +74,9 @@ resource "null_resource" "run_ansible" {
 
   provisioner "local-exec" {
     command = <<EOT
-      ansible-playbook -i ../ansible/inventory ../ansible/server.yaml --private-key=../stage4-key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-    EOT
+      chmod 600 ../stage4-key.pem && \
+      ansible-playbook -i ../ansible/inventory ../ansible/server.yaml --private-key=../stage4-key.pem --extra-vars "nostricthostchecking=true"
+EOT
   }
 }
-
 
